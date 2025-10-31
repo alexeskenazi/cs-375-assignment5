@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 struct Edge {
     int u, v, weight;
@@ -104,6 +106,8 @@ int main() {
     int n = 20;
     int k = 3; 
     
+    auto start = high_resolution_clock::now();
+    
     cout << "Sorting edges by similarity (highest first)..." << endl;
     sort(edges.begin(), edges.end());
     
@@ -125,7 +129,11 @@ int main() {
         }
     }
     
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    
     cout << "Final number of categories: " << uf.getComponents() << endl;
+    cout << "Running-time: " << duration.count() << " microseconds" << endl;
     
     return 0;
 }
