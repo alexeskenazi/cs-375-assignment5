@@ -88,6 +88,29 @@ public:
         return make_pair(totalDist, path);
     }
     
+    map<pair<char, char>, pair<int, vector<char> > > allPairsViaCapitalAlg2(char capital) {
+        map<pair<char, char>, pair<int, vector<char> > > result;
+        vector<int> distFromCapital = dijkstra(capital);
+        
+        for (map<char, int>::iterator it1 = nodeIndex.begin(); it1 != nodeIndex.end(); ++it1) {
+            for (map<char, int>::iterator it2 = nodeIndex.begin(); it2 != nodeIndex.end(); ++it2) {
+                char u = it1->first;
+                char v = it2->first;
+                
+                if (u != capital && v != capital && u != v) {
+                    int totalDist = distFromCapital[it1->second] + distFromCapital[it2->second];
+                    vector<char> path;
+                    path.push_back(u);
+                    path.push_back(capital);
+                    path.push_back(v);
+                    result[make_pair(u, v)] = make_pair(totalDist, path);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     void printPath(const vector<char>& path) {
         for (int i = 0; i < (int)path.size(); i++) {
             cout << path[i];
@@ -145,6 +168,28 @@ int main() {
     g.printPath(result_f_g.second);
     cout << endl;
     cout << "Shortest Distance: " << result_f_g.first << endl;
+    cout << endl;
+    
+    cout << "Algorithm 2 (O(n^2) - no revisits):" << endl;
+    
+    map<pair<char, char>, pair<int, vector<char> > > allPairs = g.allPairsViaCapitalAlg2(capital);
+    
+    map<pair<char, char>, pair<int, vector<char> > >::iterator it_d_i = allPairs.find(make_pair('d', 'i'));
+    if (it_d_i != allPairs.end()) {
+        cout << "Shortest Path d -> i via a: ";
+        g.printPath(it_d_i->second.second);
+        cout << endl;
+        cout << "Shortest Distance: " << it_d_i->second.first << endl;
+        cout << endl;
+    }
+    
+    map<pair<char, char>, pair<int, vector<char> > >::iterator it_f_g = allPairs.find(make_pair('f', 'g'));
+    if (it_f_g != allPairs.end()) {
+        cout << "Shortest Path f -> g via a: ";
+        g.printPath(it_f_g->second.second);
+        cout << endl;
+        cout << "Shortest Distance: " << it_f_g->second.first << endl;
+    }
     
     return 0;
 }
