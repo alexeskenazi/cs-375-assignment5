@@ -16,11 +16,11 @@ struct Edge {
 
 class UnionFind {
 private:
-    vector<int> parent;
+    vector<int> parent, rank;
     int components;
     
 public:
-    UnionFind(int n) : parent(n), components(n) {
+    UnionFind(int n) : parent(n), rank(n, 0), components(n) {
         for (int i = 0; i < n; i++) {
             parent[i] = i;
         }
@@ -37,7 +37,14 @@ public:
         int px = find(x), py = find(y);
         if (px == py) return false;
         
-        parent[py] = px;
+        if (rank[px] < rank[py]) {
+            parent[px] = py;
+        } else if (rank[px] > rank[py]) {
+            parent[py] = px;
+        } else {
+            parent[py] = px;
+            rank[px]++;
+        }
         components--;
         return true;
     }
