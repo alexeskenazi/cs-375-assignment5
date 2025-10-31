@@ -3,8 +3,10 @@
 #include <climits>
 #include <map>
 #include <queue>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 struct Edge {
     char to;
@@ -155,24 +157,34 @@ int main() {
     cout << "Total nodes: " << g.getNumNodes() << endl;
     
     cout << "\nAlgorithm 1 (O(n log n) - visits allowed):" << endl;
+    auto start1 = high_resolution_clock::now();
     
     pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
+    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
+    
+    auto end1 = high_resolution_clock::now();
+    auto duration1 = duration_cast<microseconds>(end1 - start1);
+    
     cout << "Shortest Path d -> i via a: ";
     g.printPath(result_d_i.second);
     cout << endl;
     cout << "Shortest Distance: " << result_d_i.first << endl;
     cout << endl;
     
-    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
     cout << "Shortest Path f -> g via a: ";
     g.printPath(result_f_g.second);
     cout << endl;
     cout << "Shortest Distance: " << result_f_g.first << endl;
+    cout << "Running-time: " << duration1.count() << " microseconds" << endl;
     cout << endl;
     
     cout << "Algorithm 2 (O(n^2) - no revisits):" << endl;
+    auto start2 = high_resolution_clock::now();
     
     map<pair<char, char>, pair<int, vector<char> > > allPairs = g.allPairsViaCapitalAlg2(capital);
+    
+    auto end2 = high_resolution_clock::now();
+    auto duration2 = duration_cast<microseconds>(end2 - start2);
     
     map<pair<char, char>, pair<int, vector<char> > >::iterator it_d_i = allPairs.find(make_pair('d', 'i'));
     if (it_d_i != allPairs.end()) {
@@ -190,6 +202,7 @@ int main() {
         cout << endl;
         cout << "Shortest Distance: " << it_f_g->second.first << endl;
     }
+    cout << "Running-time: " << duration2.count() << " microseconds" << endl;
     
     return 0;
 }
