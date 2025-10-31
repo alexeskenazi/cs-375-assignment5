@@ -14,13 +14,55 @@ struct Edge {
     }
 };
 
+class UnionFind {
+private:
+    vector<int> parent;
+    int components;
+    
+public:
+    UnionFind(int n) : parent(n), components(n) {
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
+    }
+    
+    int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+    
+    bool unite(int x, int y) {
+        int px = find(x), py = find(y);
+        if (px == py) return false;
+        
+        parent[py] = px;
+        components--;
+        return true;
+    }
+    
+    int getComponents() {
+        return components;
+    }
+    
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
+};
+
 int main() {
     cout << "Photo Classification Program - CS375 Assignment 5" << endl;
     cout << "Problem B.1: Object Classification via Disjoint Sets" << endl;
     
-    Edge e1(1, 2, 80);
-    Edge e2(3, 4, 50);
-    cout << "Testing Edge structure: Edge(1,2,80) > Edge(3,4,50)? " << (e1 < e2 ? "true" : "false") << endl;
+    UnionFind uf(5);
+    cout << "Initial components: " << uf.getComponents() << endl;
+    
+    uf.unite(0, 1);
+    cout << "After uniting 0 and 1: " << uf.getComponents() << " components" << endl;
+    
+    uf.unite(2, 3);
+    cout << "After uniting 2 and 3: " << uf.getComponents() << " components" << endl;
     
     return 0;
 }
