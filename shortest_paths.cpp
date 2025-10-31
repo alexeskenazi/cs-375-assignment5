@@ -72,6 +72,29 @@ public:
         return dist;
     }
     
+    pair<int, vector<char> > shortestPathViaCapital(char start, char end, char capital) {
+        vector<int> distFromCapital = dijkstra(capital);
+        
+        int startIdx = nodeIndex.find(start)->second;
+        int endIdx = nodeIndex.find(end)->second;
+        
+        int totalDist = distFromCapital[startIdx] + distFromCapital[endIdx];
+        
+        vector<char> path;
+        path.push_back(start);
+        path.push_back(capital);
+        path.push_back(end);
+        
+        return make_pair(totalDist, path);
+    }
+    
+    void printPath(const vector<char>& path) {
+        for (int i = 0; i < (int)path.size(); i++) {
+            cout << path[i];
+            if (i < (int)path.size() - 1) cout << " -> ";
+        }
+    }
+    
     void printGraph() {
         cout << "Graph with " << numNodes << " nodes:" << endl;
         for (map<char, vector<Edge> >::iterator it = adj.begin(); it != adj.end(); ++it) {
@@ -100,25 +123,28 @@ int main() {
     g.addEdge('d', 'f', 11);
     g.addEdge('e', 'f', 6);
     g.addEdge('f', 'g', 15);
+    g.addEdge('g', 'h', 18);
+    g.addEdge('h', 'i', 14);
+    g.addEdge('i', 'j', 10);
     
     char capital = 'a';
     cout << "Capital city: " << capital << endl;
+    cout << "Total nodes: " << g.getNumNodes() << endl;
     
-    g.printGraph();
+    cout << "\nAlgorithm 1 (O(n log n) - visits allowed):" << endl;
     
-    cout << "\nTesting Dijkstra's algorithm from capital '" << capital << "':" << endl;
-    vector<int> distances = g.dijkstra(capital);
+    pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
+    cout << "Shortest Path d -> i via a: ";
+    g.printPath(result_d_i.second);
+    cout << endl;
+    cout << "Shortest Distance: " << result_d_i.first << endl;
+    cout << endl;
     
-    cout << "Distances from " << capital << ":" << endl;
-    for (map<char, int>::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
-        char node = it->first;
-        int idx = it->second;
-        if (distances[idx] == INT_MAX) {
-            cout << capital << " to " << node << ": unreachable" << endl;
-        } else {
-            cout << capital << " to " << node << ": " << distances[idx] << endl;
-        }
-    }
+    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
+    cout << "Shortest Path f -> g via a: ";
+    g.printPath(result_f_g.second);
+    cout << endl;
+    cout << "Shortest Distance: " << result_f_g.first << endl;
     
     return 0;
 }
