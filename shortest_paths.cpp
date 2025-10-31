@@ -110,7 +110,6 @@ int main() {
     vector<int> distances = g.dijkstra(capital);
     
     cout << "Distances from " << capital << ":" << endl;
-    map<char, int> nodeMap = g.getNodeIndex();
     for (map<char, int>::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
         char node = it->first;
         int idx = it->second;
