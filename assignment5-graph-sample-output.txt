@@ -1,0 +1,30 @@
+//** Print out the three groups of photos in terms of number of photos N and individual photos p **//
+Group 1 = N1; photos: p_i1, p_j1, p_k1 ....
+Group 2 = N2; photos: p_i2, p_j2, p_k2 ....
+Group 3 = N3; photos: p_i3, p_j3, p_k3 ....
+
+//** print out running time **//
+Running-time
+
+
+
+//** Print out the shortest distance D and the shortest path from Source node X to Destination node Y via node a (for example, d --> i); **// 
+
+Shortest Path: d, ..., a, ..., i 
+Shortest Distance:  D 
+
+//** print out running time **//
+Running-time
+
+
+//** Print out the shortest distance D and the shortest path from Source node X to Destination node Y via node a (for example, f --> g); **// 
+
+Shortest Path: f, ..., a, ..., g 
+Shortest Distance:  D 
+
+//** print out running time **//
+Running-time
+
+
+
+

@@ -1,0 +1,27 @@
+
+
+//** Undirected Graph with N nodes and E edges, similarity of photo p1 and photo p2 is S **//
+p1 p2 80
+p2 p3 10
+....
+....
+....
+
+
+
+
+//** Find the shortest distance and path from source node X to Destination node Y via the node a **// 
+//** Using the undirected graph with N nodes, each edge (A, B) has distance D **//
+a b 5
+a g 21
+....
+....
+....
+
+//** input the source node and destination node, for example source node d to destination node i **//
+
+Source: d
+Destination: i
+
+
+
