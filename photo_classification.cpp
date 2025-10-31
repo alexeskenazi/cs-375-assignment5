@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
+#include <map>
 
 using namespace std;
 using namespace std::chrono;
@@ -108,14 +109,7 @@ int main() {
     
     auto start = high_resolution_clock::now();
     
-    cout << "Sorting edges by similarity (highest first)..." << endl;
     sort(edges.begin(), edges.end());
-    
-    cout << "Top 5 highest similarities:" << endl;
-    for (int i = 0; i < 5 && i < (int)edges.size(); i++) {
-        cout << "p" << (edges[i].u + 1) << " - p" << (edges[i].v + 1) 
-             << ": " << edges[i].weight << endl;
-    }
     
     UnionFind uf(n);
     
@@ -132,7 +126,23 @@ int main() {
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
     
-    cout << "Final number of categories: " << uf.getComponents() << endl;
+    map<int, vector<int> > groups;
+    for (int i = 0; i < n; i++) {
+        int root = uf.find(i);
+        groups[root].push_back(i + 1);
+    }
+    
+    int groupNum = 1;
+    for (map<int, vector<int> >::iterator it = groups.begin(); it != groups.end(); ++it) {
+        cout << "Group " << groupNum << " = " << it->second.size() << "; photos: ";
+        for (int i = 0; i < (int)it->second.size(); i++) {
+            cout << "p" << it->second[i];
+            if (i < (int)it->second.size() - 1) cout << ", ";
+        }
+        cout << endl;
+        groupNum++;
+    }
+    
     cout << "Running-time: " << duration.count() << " microseconds" << endl;
     
     return 0;
