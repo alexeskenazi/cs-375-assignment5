@@ -2,6 +2,7 @@
 #include <vector>
 #include <climits>
 #include <map>
+#include <queue>
 
 using namespace std;
 
@@ -38,6 +39,39 @@ public:
     
     int getNumNodes() const { return numNodes; }
     
+    map<char, int> getNodeIndex() const { return nodeIndex; }
+    
+    vector<int> dijkstra(char start) {
+        vector<int> dist(numNodes, INT_MAX);
+        priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
+        
+        int startIdx = nodeIndex[start];
+        dist[startIdx] = 0;
+        pq.push(make_pair(0, startIdx));
+        
+        while (!pq.empty()) {
+            int d = pq.top().first;
+            int u = pq.top().second;
+            pq.pop();
+            
+            if (d > dist[u]) continue;
+            
+            char uNode = indexToNode[u];
+            for (int i = 0; i < (int)adj[uNode].size(); i++) {
+                Edge edge = adj[uNode][i];
+                int v = nodeIndex[edge.to];
+                int newDist = dist[u] + edge.weight;
+                
+                if (newDist < dist[v]) {
+                    dist[v] = newDist;
+                    pq.push(make_pair(newDist, v));
+                }
+            }
+        }
+        
+        return dist;
+    }
+    
     void printGraph() {
         cout << "Graph with " << numNodes << " nodes:" << endl;
         for (map<char, vector<Edge> >::iterator it = adj.begin(); it != adj.end(); ++it) {
@@ -71,6 +105,21 @@ int main() {
     cout << "Capital city: " << capital << endl;
     
     g.printGraph();
+    
+    cout << "\nTesting Dijkstra's algorithm from capital '" << capital << "':" << endl;
+    vector<int> distances = g.dijkstra(capital);
+    
+    cout << "Distances from " << capital << ":" << endl;
+    map<char, int> nodeMap = g.getNodeIndex();
+    for (map<char, int>::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
+        char node = it->first;
+        int idx = it->second;
+        if (distances[idx] == INT_MAX) {
+            cout << capital << " to " << node << ": unreachable" << endl;
+        } else {
+            cout << capital << " to " << node << ": " << distances[idx] << endl;
+        }
+    }
     
     return 0;
 }
