@@ -1,15 +1,76 @@
 #include <iostream>
 #include <vector>
 #include <climits>
+#include <map>
 
 using namespace std;
+
+struct Edge {
+    char to;
+    int weight;
+    
+    Edge(char to, int weight) : to(to), weight(weight) {}
+};
+
+class Graph {
+private:
+    map<char, vector<Edge> > adj;
+    map<char, int> nodeIndex;
+    vector<char> indexToNode;
+    int numNodes;
+    
+public:
+    Graph() : numNodes(0) {}
+    
+    void addEdge(char u, char v, int weight) {
+        if (nodeIndex.find(u) == nodeIndex.end()) {
+            nodeIndex[u] = numNodes++;
+            indexToNode.push_back(u);
+        }
+        if (nodeIndex.find(v) == nodeIndex.end()) {
+            nodeIndex[v] = numNodes++;
+            indexToNode.push_back(v);
+        }
+        
+        adj[u].push_back(Edge(v, weight));
+        adj[v].push_back(Edge(u, weight));
+    }
+    
+    int getNumNodes() const { return numNodes; }
+    
+    void printGraph() {
+        cout << "Graph with " << numNodes << " nodes:" << endl;
+        for (map<char, vector<Edge> >::iterator it = adj.begin(); it != adj.end(); ++it) {
+            cout << "Node " << it->first << " -> ";
+            for (int i = 0; i < (int)it->second.size(); i++) {
+                cout << it->second[i].to << "(" << it->second[i].weight << ")";
+                if (i < (int)it->second.size() - 1) cout << ", ";
+            }
+            cout << endl;
+        }
+    }
+};
 
 int main() {
     cout << "Shortest Paths via Capital - CS375 Assignment 5" << endl;
     cout << "Problem B.2: All-Pairs Shortest Paths via a Given Capital" << endl;
     
-    cout << "Algorithm 1: O(n log n) - visits allowed" << endl;
-    cout << "Algorithm 2: O(n^2) - no revisits" << endl;
+    Graph g;
+    
+    g.addEdge('a', 'b', 5);
+    g.addEdge('a', 'g', 21);
+    g.addEdge('b', 'c', 8);
+    g.addEdge('b', 'd', 12);
+    g.addEdge('c', 'e', 7);
+    g.addEdge('d', 'e', 9);
+    g.addEdge('d', 'f', 11);
+    g.addEdge('e', 'f', 6);
+    g.addEdge('f', 'g', 15);
+    
+    char capital = 'a';
+    cout << "Capital city: " << capital << endl;
+    
+    g.printGraph();
     
     return 0;
 }
