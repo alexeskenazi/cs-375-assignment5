@@ -3,6 +3,8 @@
 #include <climits>
 #include <map>
 #include <chrono>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace std::chrono;
@@ -111,49 +113,80 @@ public:
 };
 
 int main() {
-    
     BellmanFordGraph g;
     
-    g.addEdge('a', 'b', 5);
-    g.addEdge('a', 'g', 21);
-    g.addEdge('b', 'c', 8);
-    g.addEdge('b', 'd', 12);
-    g.addEdge('c', 'e', 7);
-    g.addEdge('d', 'e', 9);
-    g.addEdge('d', 'f', 11);
-    g.addEdge('e', 'f', 6);
-    g.addEdge('f', 'g', 15);
-    g.addEdge('g', 'h', 18);
-    g.addEdge('h', 'i', 14);
-    g.addEdge('i', 'j', 10);
+    ifstream inputFile("B2_input.txt");
+    if (!inputFile.is_open()) {
+        cout << "Error: Could not open B2_input.txt" << endl;
+        return 1;
+    }
+    
+    string line;
+    vector<pair<char, char> > queries;
+    
+    while (getline(inputFile, line)) {
+        if (line.empty()) continue;
+        
+        stringstream ss(line);
+        string token1, token2, token3;
+        
+        if (ss >> token1 >> token2 >> token3) {
+            char u = token1[0];
+            char v = token2[0];
+            int weight = stoi(token3);
+            g.addEdge(u, v, weight);
+        } else if (ss.str().find(' ') != string::npos) {
+            stringstream ss2(line);
+            char start, end;
+            if (ss2 >> start >> end) {
+                queries.push_back(make_pair(start, end));
+            }
+        }
+    }
+    inputFile.close();
     
     char capital = 'a';
     
+    ofstream outputFile("B3_output.txt");
+    
     auto start = high_resolution_clock::now();
     
-    pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
-    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
+    vector<pair<int, vector<char> > > results;
+    for (int i = 0; i < (int)queries.size(); i++) {
+        pair<int, vector<char> > result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
+        results.push_back(result);
+    }
     
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
     
-    if (result_d_i.first != -1) {
-        cout << "Shortest Path: ";
-        g.printPath(result_d_i.second);
-        cout << endl;
-        cout << "Shortest Distance: " << result_d_i.first << endl;
-        cout << endl;
-        cout << "Running-time: " << duration.count() << " microseconds" << endl;
-        cout << endl;
+    for (int i = 0; i < (int)results.size(); i++) {
+        if (results[i].first != -1) {
+            cout << "Shortest Path: ";
+            g.printPath(results[i].second);
+            cout << endl;
+            cout << "Shortest Distance: " << results[i].first << endl;
+            cout << endl;
+            cout << "Running-time: " << duration.count() << " microseconds" << endl;
+            cout << endl;
+            
+            if (outputFile.is_open()) {
+                outputFile << "Shortest Path: ";
+                for (int j = 0; j < (int)results[i].second.size(); j++) {
+                    outputFile << results[i].second[j];
+                    if (j < (int)results[i].second.size() - 1) outputFile << ", ";
+                }
+                outputFile << endl;
+                outputFile << "Shortest Distance: " << results[i].first << endl;
+                outputFile << endl;
+                outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
+                outputFile << endl;
+            }
+        }
     }
     
-    if (result_f_g.first != -1) {
-        cout << "Shortest Path: ";
-        g.printPath(result_f_g.second);
-        cout << endl;
-        cout << "Shortest Distance: " << result_f_g.first << endl;
-        cout << endl;
-        cout << "Running-time: " << duration.count() << " microseconds" << endl;
+    if (outputFile.is_open()) {
+        outputFile.close();
     }
     
     return 0;

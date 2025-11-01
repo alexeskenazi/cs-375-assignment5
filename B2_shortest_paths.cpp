@@ -4,6 +4,8 @@
 #include <map>
 #include <queue>
 #include <chrono>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace std::chrono;
@@ -134,47 +136,75 @@ public:
 };
 
 int main() {
-    
     Graph g;
     
-    g.addEdge('a', 'b', 5);
-    g.addEdge('a', 'g', 21);
-    g.addEdge('b', 'c', 8);
-    g.addEdge('b', 'd', 12);
-    g.addEdge('c', 'e', 7);
-    g.addEdge('d', 'e', 9);
-    g.addEdge('d', 'f', 11);
-    g.addEdge('e', 'f', 6);
-    g.addEdge('f', 'g', 15);
-    g.addEdge('g', 'h', 18);
-    g.addEdge('h', 'i', 14);
-    g.addEdge('i', 'j', 10);
+    ifstream inputFile("B2_input.txt");
+    if (!inputFile.is_open()) {
+        cout << "Error: Could not open B2_input.txt" << endl;
+        return 1;
+    }
+    
+    string line;
+    vector<pair<char, char> > queries;
+    
+    while (getline(inputFile, line)) {
+        if (line.empty()) continue;
+        
+        stringstream ss(line);
+        string token1, token2, token3;
+        
+        if (ss >> token1 >> token2 >> token3) {
+            char u = token1[0];
+            char v = token2[0];
+            int weight = stoi(token3);
+            g.addEdge(u, v, weight);
+        } else if (ss.str().find(' ') != string::npos) {
+            stringstream ss2(line);
+            char start, end;
+            if (ss2 >> start >> end) {
+                queries.push_back(make_pair(start, end));
+            }
+        }
+    }
+    inputFile.close();
     
     char capital = 'a';
     
+    ofstream outputFile("B2_output.txt");
+    
     auto start1 = high_resolution_clock::now();
     
-    pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
-    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
+    vector<pair<int, vector<char> > > results;
+    for (int i = 0; i < (int)queries.size(); i++) {
+        pair<int, vector<char> > result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
+        results.push_back(result);
+    }
     
     auto end1 = high_resolution_clock::now();
     auto duration1 = duration_cast<microseconds>(end1 - start1);
     
-    cout << "Shortest Path: ";
-    g.printPath(result_d_i.second);
-    cout << endl;
-    cout << "Shortest Distance: " << result_d_i.first << endl;
-    cout << endl;
-    cout << "Running-time: " << duration1.count() << " microseconds" << endl;
-    cout << endl;
-    
-    cout << "Shortest Path: ";
-    g.printPath(result_f_g.second);
-    cout << endl;
-    cout << "Shortest Distance: " << result_f_g.first << endl;
-    cout << endl;
-    cout << "Running-time: " << duration1.count() << " microseconds" << endl;
-    cout << endl;
+    for (int i = 0; i < (int)results.size(); i++) {
+        cout << "Shortest Path: ";
+        g.printPath(results[i].second);
+        cout << endl;
+        cout << "Shortest Distance: " << results[i].first << endl;
+        cout << endl;
+        cout << "Running-time: " << duration1.count() << " microseconds" << endl;
+        cout << endl;
+        
+        if (outputFile.is_open()) {
+            outputFile << "Shortest Path: ";
+            for (int j = 0; j < (int)results[i].second.size(); j++) {
+                outputFile << results[i].second[j];
+                if (j < (int)results[i].second.size() - 1) outputFile << ", ";
+            }
+            outputFile << endl;
+            outputFile << "Shortest Distance: " << results[i].first << endl;
+            outputFile << endl;
+            outputFile << "Running-time: " << duration1.count() << " microseconds" << endl;
+            outputFile << endl;
+        }
+    }
     
     auto start2 = high_resolution_clock::now();
     
@@ -183,25 +213,34 @@ int main() {
     auto end2 = high_resolution_clock::now();
     auto duration2 = duration_cast<microseconds>(end2 - start2);
     
-    map<pair<char, char>, pair<int, vector<char> > >::iterator it_d_i = allPairs.find(make_pair('d', 'i'));
-    if (it_d_i != allPairs.end()) {
-        cout << "Shortest Path: ";
-        g.printPath(it_d_i->second.second);
-        cout << endl;
-        cout << "Shortest Distance: " << it_d_i->second.first << endl;
-        cout << endl;
-        cout << "Running-time: " << duration2.count() << " microseconds" << endl;
-        cout << endl;
+    for (int i = 0; i < (int)queries.size(); i++) {
+        map<pair<char, char>, pair<int, vector<char> > >::iterator it = allPairs.find(queries[i]);
+        if (it != allPairs.end()) {
+            cout << "Shortest Path: ";
+            g.printPath(it->second.second);
+            cout << endl;
+            cout << "Shortest Distance: " << it->second.first << endl;
+            cout << endl;
+            cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+            cout << endl;
+            
+            if (outputFile.is_open()) {
+                outputFile << "Shortest Path: ";
+                for (int j = 0; j < (int)it->second.second.size(); j++) {
+                    outputFile << it->second.second[j];
+                    if (j < (int)it->second.second.size() - 1) outputFile << ", ";
+                }
+                outputFile << endl;
+                outputFile << "Shortest Distance: " << it->second.first << endl;
+                outputFile << endl;
+                outputFile << "Running-time: " << duration2.count() << " microseconds" << endl;
+                outputFile << endl;
+            }
+        }
     }
     
-    map<pair<char, char>, pair<int, vector<char> > >::iterator it_f_g = allPairs.find(make_pair('f', 'g'));
-    if (it_f_g != allPairs.end()) {
-        cout << "Shortest Path: ";
-        g.printPath(it_f_g->second.second);
-        cout << endl;
-        cout << "Shortest Distance: " << it_f_g->second.first << endl;
-        cout << endl;
-        cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+    if (outputFile.is_open()) {
+        outputFile.close();
     }
     
     return 0;

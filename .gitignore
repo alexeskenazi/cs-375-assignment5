@@ -53,3 +53,6 @@ bellman_ford
 
 # IDE settings
 .vscode/
+B1_photo_classification
+B2_shortest_paths
+B3_bellman_ford
