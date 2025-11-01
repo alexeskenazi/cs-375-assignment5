@@ -2,8 +2,10 @@
 #include <vector>
 #include <climits>
 #include <map>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 struct Edge {
     char from, to;
@@ -130,23 +132,41 @@ int main() {
     char capital = 'a';
     
     cout << "Bellman-Ford Algorithm for Shortest Paths via Capital:" << endl;
+    auto start = high_resolution_clock::now();
     
     pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
+    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
+    
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    
     if (result_d_i.first != -1) {
         cout << "Shortest Path: ";
         g.printPath(result_d_i.second);
         cout << endl;
         cout << "Shortest Distance: " << result_d_i.first << endl;
         cout << endl;
+        cout << "Running-time: " << duration.count() << " microseconds" << endl;
+        cout << endl;
     }
     
-    pair<int, vector<char> > result_f_g = g.shortestPathViaCapital('f', 'g', capital);
     if (result_f_g.first != -1) {
         cout << "Shortest Path: ";
         g.printPath(result_f_g.second);
         cout << endl;
         cout << "Shortest Distance: " << result_f_g.first << endl;
+        cout << endl;
+        cout << "Running-time: " << duration.count() << " microseconds" << endl;
     }
+    
+    cout << endl;
+    cout << "Algorithm Comparison:" << endl;
+    cout << "Bellman-Ford vs Dijkstra:" << endl;
+    cout << "- Time Complexity: O(VE) vs O(E log V)" << endl;
+    cout << "- Negative weights: Supported vs Not supported" << endl;
+    cout << "- Negative cycles: Detects vs Cannot handle" << endl;
+    cout << "- Implementation: Simpler vs More complex (priority queue)" << endl;
+    cout << "- Use case: When negative weights possible vs Positive weights only" << endl;
     
     return 0;
 }
