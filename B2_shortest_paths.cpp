@@ -82,6 +82,11 @@ public:
         int startIdx = nodeIndex.find(start)->second;
         int endIdx = nodeIndex.find(end)->second;
         
+        if (distFromCapital[startIdx] == INT_MAX || distFromCapital[endIdx] == INT_MAX) {
+            vector<char> emptyPath;
+            return make_pair(-1, emptyPath);
+        }
+        
         int totalDist = distFromCapital[startIdx] + distFromCapital[endIdx];
         
         vector<char> path;
@@ -102,12 +107,17 @@ public:
                 char v = it2->first;
                 
                 if (u != capital && v != capital && u != v) {
-                    int totalDist = distFromCapital[it1->second] + distFromCapital[it2->second];
-                    vector<char> path;
-                    path.push_back(u);
-                    path.push_back(capital);
-                    path.push_back(v);
-                    result[make_pair(u, v)] = make_pair(totalDist, path);
+                    if (distFromCapital[it1->second] == INT_MAX || distFromCapital[it2->second] == INT_MAX) {
+                        vector<char> emptyPath;
+                        result[make_pair(u, v)] = make_pair(-1, emptyPath);
+                    } else {
+                        int totalDist = distFromCapital[it1->second] + distFromCapital[it2->second];
+                        vector<char> path;
+                        path.push_back(u);
+                        path.push_back(capital);
+                        path.push_back(v);
+                        result[make_pair(u, v)] = make_pair(totalDist, path);
+                    }
                 }
             }
         }
@@ -184,22 +194,33 @@ int main() {
     auto duration1 = duration_cast<microseconds>(end1 - start1);
     
     for (int i = 0; i < (int)results.size(); i++) {
-        cout << "Shortest Path: ";
-        g.printPath(results[i].second);
-        cout << endl;
-        cout << "Shortest Distance: " << results[i].first << endl;
-        cout << endl;
-        cout << "Running-time: " << duration1.count() << " microseconds" << endl;
-        cout << endl;
+        if (results[i].first == -1) {
+            cout << "No path exists (disconnected components)" << endl;
+            cout << endl;
+            cout << "Running-time: " << duration1.count() << " microseconds" << endl;
+            cout << endl;
+        } else {
+            cout << "Shortest Path: ";
+            g.printPath(results[i].second);
+            cout << endl;
+            cout << "Shortest Distance: " << results[i].first << endl;
+            cout << endl;
+            cout << "Running-time: " << duration1.count() << " microseconds" << endl;
+            cout << endl;
+        }
         
         if (outputFile.is_open()) {
-            outputFile << "Shortest Path: ";
-            for (int j = 0; j < (int)results[i].second.size(); j++) {
-                outputFile << results[i].second[j];
-                if (j < (int)results[i].second.size() - 1) outputFile << ", ";
+            if (results[i].first == -1) {
+                outputFile << "No path exists (disconnected components)" << endl;
+            } else {
+                outputFile << "Shortest Path: ";
+                for (int j = 0; j < (int)results[i].second.size(); j++) {
+                    outputFile << results[i].second[j];
+                    if (j < (int)results[i].second.size() - 1) outputFile << ", ";
+                }
+                outputFile << endl;
+                outputFile << "Shortest Distance: " << results[i].first << endl;
             }
-            outputFile << endl;
-            outputFile << "Shortest Distance: " << results[i].first << endl;
             outputFile << endl;
             outputFile << "Running-time: " << duration1.count() << " microseconds" << endl;
             outputFile << endl;
@@ -216,22 +237,33 @@ int main() {
     for (int i = 0; i < (int)queries.size(); i++) {
         map<pair<char, char>, pair<int, vector<char> > >::iterator it = allPairs.find(queries[i]);
         if (it != allPairs.end()) {
-            cout << "Shortest Path: ";
-            g.printPath(it->second.second);
-            cout << endl;
-            cout << "Shortest Distance: " << it->second.first << endl;
-            cout << endl;
-            cout << "Running-time: " << duration2.count() << " microseconds" << endl;
-            cout << endl;
+            if (it->second.first == -1) {
+                cout << "No path exists (disconnected components)" << endl;
+                cout << endl;
+                cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+                cout << endl;
+            } else {
+                cout << "Shortest Path: ";
+                g.printPath(it->second.second);
+                cout << endl;
+                cout << "Shortest Distance: " << it->second.first << endl;
+                cout << endl;
+                cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+                cout << endl;
+            }
             
             if (outputFile.is_open()) {
-                outputFile << "Shortest Path: ";
-                for (int j = 0; j < (int)it->second.second.size(); j++) {
-                    outputFile << it->second.second[j];
-                    if (j < (int)it->second.second.size() - 1) outputFile << ", ";
+                if (it->second.first == -1) {
+                    outputFile << "No path exists (disconnected components)" << endl;
+                } else {
+                    outputFile << "Shortest Path: ";
+                    for (int j = 0; j < (int)it->second.second.size(); j++) {
+                        outputFile << it->second.second[j];
+                        if (j < (int)it->second.second.size() - 1) outputFile << ", ";
+                    }
+                    outputFile << endl;
+                    outputFile << "Shortest Distance: " << it->second.first << endl;
                 }
-                outputFile << endl;
-                outputFile << "Shortest Distance: " << it->second.first << endl;
                 outputFile << endl;
                 outputFile << "Running-time: " << duration2.count() << " microseconds" << endl;
                 outputFile << endl;
