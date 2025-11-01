@@ -116,7 +116,7 @@ public:
     void printPath(const vector<char>& path) {
         for (int i = 0; i < (int)path.size(); i++) {
             cout << path[i];
-            if (i < (int)path.size() - 1) cout << " -> ";
+            if (i < (int)path.size() - 1) cout << ", ";
         }
     }
     
@@ -134,8 +134,6 @@ public:
 };
 
 int main() {
-    cout << "Shortest Paths via Capital - CS375 Assignment 5" << endl;
-    cout << "Problem B.2: All-Pairs Shortest Paths via a Given Capital" << endl;
     
     Graph g;
     
@@ -154,7 +152,6 @@ int main() {
     
     char capital = 'a';
     
-    cout << "Algorithm 1 (O(n log n) - visits allowed):" << endl;
     auto start1 = high_resolution_clock::now();
     
     pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
@@ -179,7 +176,6 @@ int main() {
     cout << "Running-time: " << duration1.count() << " microseconds" << endl;
     cout << endl;
     
-    cout << "Algorithm 2 (O(n^2) - no revisits):" << endl;
     auto start2 = high_resolution_clock::now();
     
     map<pair<char, char>, pair<int, vector<char> > > allPairs = g.allPairsViaCapitalAlg2(capital);

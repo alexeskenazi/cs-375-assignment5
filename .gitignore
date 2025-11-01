@@ -43,10 +43,13 @@
 # Backup directory with complete solutions
 etc/
 
-# Project executable
+# Project executables
 photo_classification
+shortest_paths
+bellman_ford
 
 # Temporary Office files
 ~$25Fall_Assignment5.doc
-shortest_paths
-bellman_ford
+
+# IDE settings
+.vscode/

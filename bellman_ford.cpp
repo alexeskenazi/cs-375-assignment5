@@ -105,14 +105,12 @@ public:
     void printPath(const vector<char>& path) {
         for (int i = 0; i < (int)path.size(); i++) {
             cout << path[i];
-            if (i < (int)path.size() - 1) cout << " -> ";
+            if (i < (int)path.size() - 1) cout << ", ";
         }
     }
 };
 
 int main() {
-    cout << "Bellman-Ford Algorithm - CS375 Assignment 5" << endl;
-    cout << "Problem B.3: Shortest Paths via Capital using Bellman-Ford" << endl;
     
     BellmanFordGraph g;
     
