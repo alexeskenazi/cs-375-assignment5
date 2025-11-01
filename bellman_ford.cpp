@@ -131,7 +131,6 @@ int main() {
     
     char capital = 'a';
     
-    cout << "Bellman-Ford Algorithm for Shortest Paths via Capital:" << endl;
     auto start = high_resolution_clock::now();
     
     pair<int, vector<char> > result_d_i = g.shortestPathViaCapital('d', 'i', capital);
@@ -158,15 +157,6 @@ int main() {
         cout << endl;
         cout << "Running-time: " << duration.count() << " microseconds" << endl;
     }
-    
-    cout << endl;
-    cout << "Algorithm Comparison:" << endl;
-    cout << "Bellman-Ford vs Dijkstra:" << endl;
-    cout << "- Time Complexity: O(VE) vs O(E log V)" << endl;
-    cout << "- Negative weights: Supported vs Not supported" << endl;
-    cout << "- Negative cycles: Detects vs Cannot handle" << endl;
-    cout << "- Implementation: Simpler vs More complex (priority queue)" << endl;
-    cout << "- Use case: When negative weights possible vs Positive weights only" << endl;
     
     return 0;
 }
