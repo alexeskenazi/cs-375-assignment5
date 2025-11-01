@@ -94,6 +94,11 @@ public:
         int startIdx = nodeIndex.find(start)->second;
         int endIdx = nodeIndex.find(end)->second;
         
+        if (distFromCapital[startIdx] == INT_MAX || distFromCapital[endIdx] == INT_MAX) {
+            vector<char> emptyPath;
+            return make_pair(-1, emptyPath);
+        }
+        
         int totalDist = distFromCapital[startIdx] + distFromCapital[endIdx];
         
         vector<char> path;
@@ -161,7 +166,12 @@ int main() {
     auto duration = duration_cast<microseconds>(end - start);
     
     for (int i = 0; i < (int)results.size(); i++) {
-        if (results[i].first != -1) {
+        if (results[i].first == -1) {
+            cout << "No path exists (disconnected components)" << endl;
+            cout << endl;
+            cout << "Running-time: " << duration.count() << " microseconds" << endl;
+            cout << endl;
+        } else {
             cout << "Shortest Path: ";
             g.printPath(results[i].second);
             cout << endl;
@@ -169,8 +179,12 @@ int main() {
             cout << endl;
             cout << "Running-time: " << duration.count() << " microseconds" << endl;
             cout << endl;
-            
-            if (outputFile.is_open()) {
+        }
+        
+        if (outputFile.is_open()) {
+            if (results[i].first == -1) {
+                outputFile << "No path exists (disconnected components)" << endl;
+            } else {
                 outputFile << "Shortest Path: ";
                 for (int j = 0; j < (int)results[i].second.size(); j++) {
                     outputFile << results[i].second[j];
@@ -178,10 +192,10 @@ int main() {
                 }
                 outputFile << endl;
                 outputFile << "Shortest Distance: " << results[i].first << endl;
-                outputFile << endl;
-                outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
-                outputFile << endl;
             }
+            outputFile << endl;
+            outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
+            outputFile << endl;
         }
     }
     
