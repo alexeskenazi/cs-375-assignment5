@@ -44,7 +44,9 @@ public:
         int startIdx = nodeIndex.find(start)->second;
         dist[startIdx] = 0;
         
+        cout << "Phase 1: Relaxing edges for " << (numNodes - 1) << " iterations..." << endl;
         for (int i = 0; i < numNodes - 1; i++) {
+            bool updated = false;
             for (int j = 0; j < (int)edges.size(); j++) {
                 Edge edge = edges[j];
                 int u = nodeIndex.find(edge.from)->second;
@@ -52,10 +54,30 @@ public:
                 
                 if (dist[u] != INT_MAX && dist[u] + edge.weight < dist[v]) {
                     dist[v] = dist[u] + edge.weight;
+                    updated = true;
                 }
+            }
+            if (!updated) {
+                cout << "No updates in iteration " << (i + 1) << ", algorithm converged early." << endl;
+                break;
             }
         }
         
+        cout << "Phase 2: Checking for negative cycles..." << endl;
+        for (int j = 0; j < (int)edges.size(); j++) {
+            Edge edge = edges[j];
+            int u = nodeIndex.find(edge.from)->second;
+            int v = nodeIndex.find(edge.to)->second;
+            
+            if (dist[u] != INT_MAX && dist[u] + edge.weight < dist[v]) {
+                cout << "Negative cycle detected!" << endl;
+                cout << "Edge causing issue: " << edge.from << " -> " << edge.to 
+                     << " (weight: " << edge.weight << ")" << endl;
+                return vector<int>();
+            }
+        }
+        
+        cout << "No negative cycles found." << endl;
         return dist;
     }
     
@@ -86,10 +108,17 @@ int main() {
     g.addEdge('e', 'f', 6);
     g.addEdge('f', 'g', 15);
     
+    cout << "\nTesting with normal positive weights:" << endl;
+    
     char start = 'a';
     cout << "Running Bellman-Ford from node '" << start << "':" << endl;
     
     vector<int> distances = g.bellmanFord(start);
+    
+    if (distances.empty()) {
+        cout << "Algorithm terminated due to negative cycle." << endl;
+        return 0;
+    }
     
     cout << "Shortest distances from " << start << ":" << endl;
     map<char, int> nodeMap = g.getNodeIndex();
@@ -101,6 +130,20 @@ int main() {
         } else {
             cout << start << " to " << node << ": " << distances[idx] << endl;
         }
+    }
+    
+    cout << "\nTesting negative cycle detection:" << endl;
+    BellmanFordGraph g2;
+    g2.addEdge('a', 'b', 1);
+    g2.addEdge('b', 'c', -3);
+    g2.addEdge('c', 'a', 1);
+    
+    cout << "Added triangle: a->b(1), b->c(-3), c->a(1)" << endl;
+    cout << "Sum of weights: 1 + (-3) + 1 = -1 (negative cycle!)" << endl;
+    
+    vector<int> distances2 = g2.bellmanFord('a');
+    if (distances2.empty()) {
+        cout << "Successfully detected negative cycle!" << endl;
     }
     
     return 0;
