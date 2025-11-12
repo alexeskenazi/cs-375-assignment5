@@ -10,22 +10,29 @@
 using namespace std;
 using namespace std::chrono;
 
+// Edge structure for adjacency list
 struct Edge {
     char to;
     int weight;
-    
-    Edge(char to, int weight) : to(to), weight(weight) {}
+
+    Edge(char to, int weight) {
+        this->to = to;
+        this->weight = weight;
+    }
 };
 
+// Graph class using adjacency list
 class Graph {
 private:
     map<char, vector<Edge> > adj;
     map<char, int> nodeIndex;
     vector<char> indexToNode;
     int numNodes;
-    
+
 public:
-    Graph() : numNodes(0) {}
+    Graph() {
+        numNodes = 0;
+    }
     
     void addEdge(char u, char v, int weight) {
         if (nodeIndex.find(u) == nodeIndex.end()) {
@@ -45,10 +52,11 @@ public:
     
     map<char, int> getNodeIndex() const { return nodeIndex; }
     
+    // Dijkstra's algorithm implementation
     vector<int> dijkstra(char start) {
         vector<int> dist(numNodes, INT_MAX);
         priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
-        
+
         int startIdx = nodeIndex[start];
         dist[startIdx] = 0;
         pq.push(make_pair(0, startIdx));
