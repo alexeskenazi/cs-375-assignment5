@@ -1,20 +1,20 @@
 Shortest Path: d, a, i
 Shortest Distance: 70
 
-Running-time: 32 microseconds
+Running-time: 35 microseconds
 
 Shortest Path: f, a, g
 Shortest Distance: 47
 
-Running-time: 32 microseconds
+Running-time: 35 microseconds
 
 Shortest Path: d, a, i
 Shortest Distance: 70
 
-Running-time: 84 microseconds
+Running-time: 87 microseconds
 
 Shortest Path: f, a, g
 Shortest Distance: 47
 
-Running-time: 84 microseconds
+Running-time: 87 microseconds
 
