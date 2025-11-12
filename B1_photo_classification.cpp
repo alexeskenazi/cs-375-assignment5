@@ -18,12 +18,12 @@ struct Edge {
         this->v = v;
         this->weight = weight;
     }
-
-    // Sort by weight in descending order (higher similarity first)
-    bool operator<(const Edge& other) const {
-        return weight > other.weight;
-    }
 };
+
+// Comparison function for sorting edges by weight (descending order)
+bool compareEdges(const Edge& a, const Edge& b) {
+    return a.weight > b.weight;  // higher similarity first
+}
 
 // Union-Find data structure for disjoint sets
 class UnionFind {
@@ -119,7 +119,7 @@ int main() {
     auto start = high_resolution_clock::now();
 
     // Sort edges by weight (descending order for max similarity)
-    sort(edges.begin(), edges.end());
+    sort(edges.begin(), edges.end(), compareEdges);
     cout << "Edges sorted by similarity (highest first)" << endl;
 
     UnionFind uf(n);

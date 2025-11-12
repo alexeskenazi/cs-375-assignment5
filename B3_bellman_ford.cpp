@@ -12,8 +12,12 @@ using namespace std::chrono;
 struct Edge {
     char from, to;
     int weight;
-    
-    Edge(char from, char to, int weight) : from(from), to(to), weight(weight) {}
+
+    Edge(char from, char to, int weight) {
+        this->from = from;
+        this->to = to;
+        this->weight = weight;
+    }
 };
 
 class BellmanFordGraph {
@@ -24,7 +28,9 @@ private:
     int numNodes;
     
 public:
-    BellmanFordGraph() : numNodes(0) {}
+    BellmanFordGraph() {
+        numNodes = 0;
+    }
     
     void addEdge(char u, char v, int weight) {
         if (nodeIndex.find(u) == nodeIndex.end()) {
