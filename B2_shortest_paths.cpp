@@ -21,6 +21,11 @@ struct Edge {
     }
 };
 
+// Type aliases to make complex types easier to read
+typedef pair<char, char> CityPair;           // (start city, end city)
+typedef pair<int, vector<char> > PathResult;  // (distance, path)
+typedef map<CityPair, PathResult> PathMap;    // stores all paths
+
 // Graph class using adjacency list
 class Graph {
 private:
@@ -84,7 +89,7 @@ public:
         return dist;
     }
     
-    pair<int, vector<char> > shortestPathViaCapital(char start, char end, char capital) {
+    PathResult shortestPathViaCapital(char start, char end, char capital) {
         vector<int> distFromCapital = dijkstra(capital);
         
         int startIdx = nodeIndex.find(start)->second;
@@ -105,8 +110,8 @@ public:
         return make_pair(totalDist, path);
     }
     
-    map<pair<char, char>, pair<int, vector<char> > > allPairsViaCapitalAlg2(char capital) {
-        map<pair<char, char>, pair<int, vector<char> > > result;
+    PathMap allPairsViaCapitalAlg2(char capital) {
+        PathMap result;
         vector<int> distFromCapital = dijkstra(capital);
         
         for (map<char, int>::iterator it1 = nodeIndex.begin(); it1 != nodeIndex.end(); ++it1) {
@@ -163,7 +168,7 @@ int main() {
     }
     
     string line;
-    vector<pair<char, char> > queries;
+    vector<CityPair> queries;
     
     while (getline(inputFile, line)) {
         if (line.empty()) continue;
@@ -202,10 +207,10 @@ int main() {
     cout << "Running Dijkstra from capital '" << capital << "'..." << endl;
     auto start1 = high_resolution_clock::now();
 
-    vector<pair<int, vector<char> > > results;
+    vector<PathResult> results;
     for (int i = 0; i < (int)queries.size(); i++) {
         cout << "Computing path: " << queries[i].first << " -> " << capital << " -> " << queries[i].second << endl;
-        pair<int, vector<char> > result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
+        PathResult result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
         results.push_back(result);
     }
 
@@ -252,14 +257,14 @@ int main() {
     cout << endl << "=== ALGORITHM 2: O(n^2) - No Revisits ===" << endl;
     cout << "Precomputing all pairs of cities via capital..." << endl;
 
-    map<pair<char, char>, pair<int, vector<char> > > allPairs = g.allPairsViaCapitalAlg2(capital);
+    PathMap allPairs = g.allPairsViaCapitalAlg2(capital);
 
     auto end2 = high_resolution_clock::now();
     auto duration2 = duration_cast<microseconds>(end2 - start2);
     cout << "Computed paths for all " << allPairs.size() << " city pairs" << endl << endl;
-    
+
     for (int i = 0; i < (int)queries.size(); i++) {
-        map<pair<char, char>, pair<int, vector<char> > >::iterator it = allPairs.find(queries[i]);
+        PathMap::iterator it = allPairs.find(queries[i]);
         if (it != allPairs.end()) {
             if (it->second.first == -1) {
                 cout << "No path exists (disconnected components)" << endl;
