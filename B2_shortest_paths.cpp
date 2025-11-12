@@ -25,8 +25,8 @@ struct Edge {
 class Graph {
 private:
     map<char, vector<Edge> > adj;
-    map<char, int> nodeIndex;
-    vector<char> indexToNode;
+    map<char, int> nodeIndex;  // char to index
+    vector<char> indexToNode; // index to char
     int numNodes;
 
 public:
@@ -187,19 +187,31 @@ int main() {
     inputFile.close();
     
     char capital = 'a';
-    
+
+    cout << "=== ALGORITHM 1: O(n log n) - Visits Allowed ===" << endl;
+    cout << "Graph has " << g.getNumNodes() << " nodes" << endl;
+    cout << "Capital city: " << capital << endl;
+    cout << "Number of queries: " << queries.size() << endl;
+    for (int i = 0; i < (int)queries.size(); i++) {
+        cout << "  Query " << (i+1) << ": " << queries[i].first << " to " << queries[i].second << endl;
+    }
+    cout << endl;
+
     ofstream outputFile("B2_output.txt");
-    
+
+    cout << "Running Dijkstra from capital '" << capital << "'..." << endl;
     auto start1 = high_resolution_clock::now();
-    
+
     vector<pair<int, vector<char> > > results;
     for (int i = 0; i < (int)queries.size(); i++) {
+        cout << "Computing path: " << queries[i].first << " -> " << capital << " -> " << queries[i].second << endl;
         pair<int, vector<char> > result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
         results.push_back(result);
     }
-    
+
     auto end1 = high_resolution_clock::now();
     auto duration1 = duration_cast<microseconds>(end1 - start1);
+    cout << endl;
     
     for (int i = 0; i < (int)results.size(); i++) {
         if (results[i].first == -1) {
@@ -237,10 +249,14 @@ int main() {
     
     auto start2 = high_resolution_clock::now();
     
+    cout << endl << "=== ALGORITHM 2: O(n^2) - No Revisits ===" << endl;
+    cout << "Precomputing all pairs of cities via capital..." << endl;
+
     map<pair<char, char>, pair<int, vector<char> > > allPairs = g.allPairsViaCapitalAlg2(capital);
-    
+
     auto end2 = high_resolution_clock::now();
     auto duration2 = duration_cast<microseconds>(end2 - start2);
+    cout << "Computed paths for all " << allPairs.size() << " city pairs" << endl << endl;
     
     for (int i = 0; i < (int)queries.size(); i++) {
         map<pair<char, char>, pair<int, vector<char> > >::iterator it = allPairs.find(queries[i]);

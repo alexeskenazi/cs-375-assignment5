@@ -151,19 +151,33 @@ int main() {
     inputFile.close();
     
     char capital = 'a';
-    
+
+    cout << "=== BELLMAN-FORD ALGORITHM ===" << endl;
+    cout << "Graph has " << g.getNumNodes() << " nodes and " << g.getNumEdges() << " directed edges" << endl;
+    cout << "Capital city: " << capital << endl;
+    cout << "Number of queries: " << queries.size() << endl;
+    for (int i = 0; i < (int)queries.size(); i++) {
+        cout << "  Query " << (i+1) << ": " << queries[i].first << " to " << queries[i].second << endl;
+    }
+    cout << endl;
+
     ofstream outputFile("B3_output.txt");
-    
+
+    cout << "Running Bellman-Ford from capital '" << capital << "'..." << endl;
+    cout << "Will relax edges " << (g.getNumNodes() - 1) << " times" << endl << endl;
+
     auto start = high_resolution_clock::now();
-    
+
     vector<pair<int, vector<char> > > results;
     for (int i = 0; i < (int)queries.size(); i++) {
+        cout << "Computing path: " << queries[i].first << " -> " << capital << " -> " << queries[i].second << endl;
         pair<int, vector<char> > result = g.shortestPathViaCapital(queries[i].first, queries[i].second, capital);
         results.push_back(result);
     }
-    
+
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
+    cout << endl;
     
     for (int i = 0; i < (int)results.size(); i++) {
         if (results[i].first == -1) {

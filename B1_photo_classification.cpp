@@ -111,23 +111,37 @@ int main() {
     int n = 20;  // number of photos
     int k = 3;   // number of groups we want
 
+    cout << "Starting photo classification..." << endl;
+    cout << "Total photos: " << n << endl;
+    cout << "Target groups: " << k << endl;
+    cout << "Total edges: " << edges.size() << endl << endl;
+
     auto start = high_resolution_clock::now();
 
     // Sort edges by weight (descending order for max similarity)
     sort(edges.begin(), edges.end());
+    cout << "Edges sorted by similarity (highest first)" << endl;
 
     UnionFind uf(n);
+    cout << "Starting with " << uf.getComponents() << " components (each photo is separate)" << endl << endl;
 
     // Process edges until we have k groups
+    int edgesProcessed = 0;
     for (int i = 0; i < (int)edges.size(); i++) {
         if (uf.getComponents() <= k) {
+            cout << "Reached target of " << k << " groups, stopping..." << endl;
             break;  // we have our 3 groups
         }
 
         if (!uf.connected(edges[i].u, edges[i].v)) {
+            cout << "Merging p" << (edges[i].u + 1) << " and p" << (edges[i].v + 1)
+                 << " (similarity: " << edges[i].weight << ") -> ";
             uf.unite(edges[i].u, edges[i].v);
+            edgesProcessed++;
+            cout << uf.getComponents() << " groups remaining" << endl;
         }
     }
+    cout << endl << "Total edges used: " << edgesProcessed << endl << endl;
     
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
@@ -140,6 +154,8 @@ int main() {
     }
 
     // Print results
+    cout << "Final Groups:" << endl;
+    cout << "-------------" << endl;
     int groupNum = 1;
     for (map<int, vector<int> >::iterator it = groups.begin(); it != groups.end(); ++it) {
         cout << "Group " << groupNum << " = " << it->second.size() << "; photos: ";
@@ -152,6 +168,7 @@ int main() {
         cout << endl;
         groupNum++;
     }
+    cout << endl;
 
     cout << "Running-time: " << duration.count() << " microseconds" << endl;
     
