@@ -156,6 +156,7 @@ int main() {
     // Print results
     cout << "Final Groups:" << endl;
     cout << "-------------" << endl;
+    cout << "//** Print out the three groups of photos in terms of number of photos N and individual photos p **//" << endl;
     int groupNum = 1;
     for (map<int, vector<int> >::iterator it = groups.begin(); it != groups.end(); ++it) {
         cout << "Group " << groupNum << " = " << it->second.size() << "; photos: ";
@@ -170,10 +171,12 @@ int main() {
     }
     cout << endl;
 
+    cout << "//** print out running time **//" << endl;
     cout << "Running-time: " << duration.count() << " microseconds" << endl;
     
     ofstream outputFile("B1_output.txt");
     if (outputFile.is_open()) {
+        outputFile << "//** Print out the three groups of photos in terms of number of photos N and individual photos p **//" << endl;
         groupNum = 1;
         for (map<int, vector<int> >::iterator it = groups.begin(); it != groups.end(); ++it) {
             outputFile << "Group " << groupNum << " = " << it->second.size() << "; photos: ";
@@ -184,6 +187,8 @@ int main() {
             outputFile << endl;
             groupNum++;
         }
+        outputFile << endl;
+        outputFile << "//** print out running time **//" << endl;
         outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
         outputFile.close();
     }

@@ -1,20 +1,25 @@
-Shortest Path: d, a, i
-Shortest Distance: 70
+//** Print out the shortest distance D and the shortest path from Source node d to Destination node i via node a (for example, d --> i); **//
 
-Running-time: 35 microseconds
+Shortest Path: d, g, e, a, i
+Shortest Distance: 40
 
-Shortest Path: f, a, g
-Shortest Distance: 47
+//** Print out the shortest distance D and the shortest path from Source node f to Destination node g via node a (for example, f --> g); **//
 
-Running-time: 35 microseconds
+Shortest Path: f, e, a, e, g
+Shortest Distance: 32
 
-Shortest Path: d, a, i
-Shortest Distance: 70
+//** print out running time **//
+Running-time: 53 microseconds
 
-Running-time: 87 microseconds
+//** Print out the shortest distance D and the shortest path from Source node d to Destination node i via node a (for example, d --> i); **//
 
-Shortest Path: f, a, g
-Shortest Distance: 47
+Shortest Path: d, g, e, a, i
+Shortest Distance: 40
 
-Running-time: 87 microseconds
+//** Print out the shortest distance D and the shortest path from Source node f to Destination node g via node a (for example, f --> g); **//
+
+No valid path (paths would overlap - violates no-revisit constraint)
+
+//** print out running time **//
+Running-time: 240 microseconds
 

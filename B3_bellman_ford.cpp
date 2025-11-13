@@ -49,34 +49,57 @@ public:
     int getNumNodes() const { return numNodes; }
     int getNumEdges() const { return edges.size(); }
     
-    vector<int> bellmanFord(char start) {
+    pair<vector<int>, vector<int> > bellmanFordWithParents(char start) {
         vector<int> dist(numNodes, INT_MAX);
+        vector<int> parent(numNodes, -1);
         int startIdx = nodeIndex.find(start)->second;
         dist[startIdx] = 0;
-        
+
         for (int i = 0; i < numNodes - 1; i++) {
             for (int j = 0; j < (int)edges.size(); j++) {
                 Edge edge = edges[j];
                 int u = nodeIndex.find(edge.from)->second;
                 int v = nodeIndex.find(edge.to)->second;
-                
+
                 if (dist[u] != INT_MAX && dist[u] + edge.weight < dist[v]) {
                     dist[v] = dist[u] + edge.weight;
+                    parent[v] = u;
                 }
             }
         }
-        
+
         for (int j = 0; j < (int)edges.size(); j++) {
             Edge edge = edges[j];
             int u = nodeIndex.find(edge.from)->second;
             int v = nodeIndex.find(edge.to)->second;
-            
+
             if (dist[u] != INT_MAX && dist[u] + edge.weight < dist[v]) {
                 cout << "Negative cycle detected!" << endl;
-                return vector<int>();
+                return make_pair(vector<int>(), vector<int>());
             }
         }
-        return dist;
+        return make_pair(dist, parent);
+    }
+
+    // Extract path from parent array
+    vector<char> extractPath(int from, int to, const vector<int>& parent) {
+        vector<char> path;
+        int curr = to;
+
+        while (curr != from) {
+            path.push_back(indexToNode[curr]);
+            curr = parent[curr];
+        }
+        path.push_back(indexToNode[from]);
+
+        // Reverse to get path from 'from' to 'to'
+        for (int i = 0; i < (int)path.size() / 2; i++) {
+            char temp = path[i];
+            path[i] = path[path.size() - 1 - i];
+            path[path.size() - 1 - i] = temp;
+        }
+
+        return path;
     }
     
     void printGraph() {
@@ -90,29 +113,41 @@ public:
     map<char, int> getNodeIndex() const { return nodeIndex; }
     
     pair<int, vector<char> > shortestPathViaCapital(char start, char end, char capital) {
-        vector<int> distFromCapital = bellmanFord(capital);
-        
+        pair<vector<int>, vector<int> > result = bellmanFordWithParents(capital);
+        vector<int> distFromCapital = result.first;
+        vector<int> parent = result.second;
+
         if (distFromCapital.empty()) {
             cout << "Cannot compute paths due to negative cycle!" << endl;
             return make_pair(-1, vector<char>());
         }
-        
+
+        int capitalIdx = nodeIndex.find(capital)->second;
         int startIdx = nodeIndex.find(start)->second;
         int endIdx = nodeIndex.find(end)->second;
-        
+
         if (distFromCapital[startIdx] == INT_MAX || distFromCapital[endIdx] == INT_MAX) {
             vector<char> emptyPath;
             return make_pair(-1, emptyPath);
         }
-        
+
         int totalDist = distFromCapital[startIdx] + distFromCapital[endIdx];
-        
-        vector<char> path;
-        path.push_back(start);
-        path.push_back(capital);
-        path.push_back(end);
-        
-        return make_pair(totalDist, path);
+
+        // Build actual path: start -> ... -> capital -> ... -> end
+        vector<char> pathToStart = extractPath(capitalIdx, startIdx, parent);
+        vector<char> pathToEnd = extractPath(capitalIdx, endIdx, parent);
+
+        vector<char> fullPath;
+        // Reverse path from capital to start (to get start to capital)
+        for (int i = (int)pathToStart.size() - 1; i >= 0; i--) {
+            fullPath.push_back(pathToStart[i]);
+        }
+        // Add path from capital to end (skip capital since already added)
+        for (int i = 1; i < (int)pathToEnd.size(); i++) {
+            fullPath.push_back(pathToEnd[i]);
+        }
+
+        return make_pair(totalDist, fullPath);
     }
     
     void printPath(const vector<char>& path) {
@@ -184,12 +219,16 @@ int main() {
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
     cout << endl;
-    
+
     for (int i = 0; i < (int)results.size(); i++) {
+        cout << "//** Print out the shortest distance D and the shortest path from Source node "
+             << queries[i].first << " to Destination node " << queries[i].second
+             << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+             << "); **//" << endl;
+        cout << endl;
+
         if (results[i].first == -1) {
             cout << "No path exists (disconnected components)" << endl;
-            cout << endl;
-            cout << "Running-time: " << duration.count() << " microseconds" << endl;
             cout << endl;
         } else {
             cout << "Shortest Path: ";
@@ -197,13 +236,18 @@ int main() {
             cout << endl;
             cout << "Shortest Distance: " << results[i].first << endl;
             cout << endl;
-            cout << "Running-time: " << duration.count() << " microseconds" << endl;
-            cout << endl;
         }
-        
+
         if (outputFile.is_open()) {
+            outputFile << "//** Print out the shortest distance D and the shortest path from Source node "
+                       << queries[i].first << " to Destination node " << queries[i].second
+                       << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+                       << "); **//" << endl;
+            outputFile << endl;
+
             if (results[i].first == -1) {
                 outputFile << "No path exists (disconnected components)" << endl;
+                outputFile << endl;
             } else {
                 outputFile << "Shortest Path: ";
                 for (int j = 0; j < (int)results[i].second.size(); j++) {
@@ -212,11 +256,19 @@ int main() {
                 }
                 outputFile << endl;
                 outputFile << "Shortest Distance: " << results[i].first << endl;
+                outputFile << endl;
             }
-            outputFile << endl;
-            outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
-            outputFile << endl;
         }
+    }
+
+    cout << "//** print out running time **//" << endl;
+    cout << "Running-time: " << duration.count() << " microseconds" << endl;
+    cout << endl;
+
+    if (outputFile.is_open()) {
+        outputFile << "//** print out running time **//" << endl;
+        outputFile << "Running-time: " << duration.count() << " microseconds" << endl;
+        outputFile << endl;
     }
     
     if (outputFile.is_open()) {

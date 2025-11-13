@@ -57,84 +57,165 @@ public:
     
     map<char, int> getNodeIndex() const { return nodeIndex; }
     
-    // Dijkstra's algorithm implementation
-    vector<int> dijkstra(char start) {
+    // Dijkstra's algorithm implementation - returns distances and parent pointers
+    pair<vector<int>, vector<int> > dijkstraWithParents(char start) {
         vector<int> dist(numNodes, INT_MAX);
+        vector<int> parent(numNodes, -1);
         priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
 
         int startIdx = nodeIndex[start];
         dist[startIdx] = 0;
         pq.push(make_pair(0, startIdx));
-        
+
         while (!pq.empty()) {
             int d = pq.top().first;
             int u = pq.top().second;
             pq.pop();
-            
+
             if (d > dist[u]) continue;
-            
+
             char uNode = indexToNode[u];
             for (int i = 0; i < (int)adj[uNode].size(); i++) {
                 Edge edge = adj[uNode][i];
                 int v = nodeIndex[edge.to];
                 int newDist = dist[u] + edge.weight;
-                
+
                 if (newDist < dist[v]) {
                     dist[v] = newDist;
+                    parent[v] = u;
                     pq.push(make_pair(newDist, v));
                 }
             }
         }
-        
-        return dist;
+
+        return make_pair(dist, parent);
+    }
+
+    // Extract path from parent array
+    vector<char> extractPath(int from, int to, const vector<int>& parent) {
+        vector<char> path;
+        int curr = to;
+
+        while (curr != from) {
+            path.push_back(indexToNode[curr]);
+            curr = parent[curr];
+        }
+        path.push_back(indexToNode[from]);
+
+        // Reverse to get path from 'from' to 'to'
+        for (int i = 0; i < (int)path.size() / 2; i++) {
+            char temp = path[i];
+            path[i] = path[path.size() - 1 - i];
+            path[path.size() - 1 - i] = temp;
+        }
+
+        return path;
+    }
+
+    // Check if two paths share any vertices (except the capital)
+    bool pathsShareVertices(const vector<char>& path1, const vector<char>& path2, char capital) {
+        map<char, bool> visited;
+
+        // Mark all vertices in path1 (except capital)
+        for (int i = 0; i < (int)path1.size(); i++) {
+            if (path1[i] != capital) {
+                visited[path1[i]] = true;
+            }
+        }
+
+        // Check if any vertex in path2 (except capital) is in path1
+        for (int i = 0; i < (int)path2.size(); i++) {
+            if (path2[i] != capital && visited[path2[i]]) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
     PathResult shortestPathViaCapital(char start, char end, char capital) {
-        vector<int> distFromCapital = dijkstra(capital);
-        
+        pair<vector<int>, vector<int> > result = dijkstraWithParents(capital);
+        vector<int> distFromCapital = result.first;
+        vector<int> parent = result.second;
+
+        int capitalIdx = nodeIndex.find(capital)->second;
         int startIdx = nodeIndex.find(start)->second;
         int endIdx = nodeIndex.find(end)->second;
-        
+
         if (distFromCapital[startIdx] == INT_MAX || distFromCapital[endIdx] == INT_MAX) {
             vector<char> emptyPath;
             return make_pair(-1, emptyPath);
         }
-        
+
         int totalDist = distFromCapital[startIdx] + distFromCapital[endIdx];
-        
-        vector<char> path;
-        path.push_back(start);
-        path.push_back(capital);
-        path.push_back(end);
-        
-        return make_pair(totalDist, path);
+
+        // Build actual path: start -> ... -> capital -> ... -> end
+        vector<char> pathToStart = extractPath(capitalIdx, startIdx, parent);
+        vector<char> pathToEnd = extractPath(capitalIdx, endIdx, parent);
+
+        vector<char> fullPath;
+        // Reverse path from capital to start (to get start to capital)
+        for (int i = (int)pathToStart.size() - 1; i >= 0; i--) {
+            fullPath.push_back(pathToStart[i]);
+        }
+        // Add path from capital to end (skip capital since already added)
+        for (int i = 1; i < (int)pathToEnd.size(); i++) {
+            fullPath.push_back(pathToEnd[i]);
+        }
+
+        return make_pair(totalDist, fullPath);
     }
     
     PathMap allPairsViaCapitalAlg2(char capital) {
         PathMap result;
-        vector<int> distFromCapital = dijkstra(capital);
-        
+        pair<vector<int>, vector<int> > dijkstraResult = dijkstraWithParents(capital);
+        vector<int> distFromCapital = dijkstraResult.first;
+        vector<int> parent = dijkstraResult.second;
+
+        int capitalIdx = nodeIndex.find(capital)->second;
+
         for (map<char, int>::iterator it1 = nodeIndex.begin(); it1 != nodeIndex.end(); ++it1) {
             for (map<char, int>::iterator it2 = nodeIndex.begin(); it2 != nodeIndex.end(); ++it2) {
                 char u = it1->first;
                 char v = it2->first;
-                
+
                 if (u != capital && v != capital && u != v) {
-                    if (distFromCapital[it1->second] == INT_MAX || distFromCapital[it2->second] == INT_MAX) {
+                    int uIdx = it1->second;
+                    int vIdx = it2->second;
+
+                    if (distFromCapital[uIdx] == INT_MAX || distFromCapital[vIdx] == INT_MAX) {
                         vector<char> emptyPath;
                         result[make_pair(u, v)] = make_pair(-1, emptyPath);
                     } else {
-                        int totalDist = distFromCapital[it1->second] + distFromCapital[it2->second];
-                        vector<char> path;
-                        path.push_back(u);
-                        path.push_back(capital);
-                        path.push_back(v);
-                        result[make_pair(u, v)] = make_pair(totalDist, path);
+                        // Extract actual paths from capital
+                        vector<char> pathToU = extractPath(capitalIdx, uIdx, parent);
+                        vector<char> pathToV = extractPath(capitalIdx, vIdx, parent);
+
+                        // Check if paths share any vertices (except capital)
+                        if (pathsShareVertices(pathToU, pathToV, capital)) {
+                            // Paths overlap - violates no-revisit constraint
+                            vector<char> emptyPath;
+                            result[make_pair(u, v)] = make_pair(-1, emptyPath);
+                        } else {
+                            // Paths are disjoint - valid path exists
+                            int totalDist = distFromCapital[uIdx] + distFromCapital[vIdx];
+
+                            // Build full path: u -> ... -> capital -> ... -> v
+                            vector<char> fullPath;
+                            for (int i = (int)pathToU.size() - 1; i >= 0; i--) {
+                                fullPath.push_back(pathToU[i]);
+                            }
+                            for (int i = 1; i < (int)pathToV.size(); i++) {
+                                fullPath.push_back(pathToV[i]);
+                            }
+
+                            result[make_pair(u, v)] = make_pair(totalDist, fullPath);
+                        }
                     }
                 }
             }
         }
-        
+
         return result;
     }
     
@@ -217,12 +298,16 @@ int main() {
     auto end1 = high_resolution_clock::now();
     auto duration1 = duration_cast<microseconds>(end1 - start1);
     cout << endl;
-    
+
     for (int i = 0; i < (int)results.size(); i++) {
+        cout << "//** Print out the shortest distance D and the shortest path from Source node "
+             << queries[i].first << " to Destination node " << queries[i].second
+             << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+             << "); **//" << endl;
+        cout << endl;
+
         if (results[i].first == -1) {
             cout << "No path exists (disconnected components)" << endl;
-            cout << endl;
-            cout << "Running-time: " << duration1.count() << " microseconds" << endl;
             cout << endl;
         } else {
             cout << "Shortest Path: ";
@@ -230,13 +315,18 @@ int main() {
             cout << endl;
             cout << "Shortest Distance: " << results[i].first << endl;
             cout << endl;
-            cout << "Running-time: " << duration1.count() << " microseconds" << endl;
-            cout << endl;
         }
-        
+
         if (outputFile.is_open()) {
+            outputFile << "//** Print out the shortest distance D and the shortest path from Source node "
+                       << queries[i].first << " to Destination node " << queries[i].second
+                       << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+                       << "); **//" << endl;
+            outputFile << endl;
+
             if (results[i].first == -1) {
                 outputFile << "No path exists (disconnected components)" << endl;
+                outputFile << endl;
             } else {
                 outputFile << "Shortest Path: ";
                 for (int j = 0; j < (int)results[i].second.size(); j++) {
@@ -245,11 +335,19 @@ int main() {
                 }
                 outputFile << endl;
                 outputFile << "Shortest Distance: " << results[i].first << endl;
+                outputFile << endl;
             }
-            outputFile << endl;
-            outputFile << "Running-time: " << duration1.count() << " microseconds" << endl;
-            outputFile << endl;
         }
+    }
+
+    cout << "//** print out running time **//" << endl;
+    cout << "Running-time: " << duration1.count() << " microseconds" << endl;
+    cout << endl;
+
+    if (outputFile.is_open()) {
+        outputFile << "//** print out running time **//" << endl;
+        outputFile << "Running-time: " << duration1.count() << " microseconds" << endl;
+        outputFile << endl;
     }
     
     auto start2 = high_resolution_clock::now();
@@ -266,10 +364,14 @@ int main() {
     for (int i = 0; i < (int)queries.size(); i++) {
         PathMap::iterator it = allPairs.find(queries[i]);
         if (it != allPairs.end()) {
+            cout << "//** Print out the shortest distance D and the shortest path from Source node "
+                 << queries[i].first << " to Destination node " << queries[i].second
+                 << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+                 << "); **//" << endl;
+            cout << endl;
+
             if (it->second.first == -1) {
-                cout << "No path exists (disconnected components)" << endl;
-                cout << endl;
-                cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+                cout << "No valid path (paths would overlap - violates no-revisit constraint)" << endl;
                 cout << endl;
             } else {
                 cout << "Shortest Path: ";
@@ -277,13 +379,18 @@ int main() {
                 cout << endl;
                 cout << "Shortest Distance: " << it->second.first << endl;
                 cout << endl;
-                cout << "Running-time: " << duration2.count() << " microseconds" << endl;
-                cout << endl;
             }
-            
+
             if (outputFile.is_open()) {
+                outputFile << "//** Print out the shortest distance D and the shortest path from Source node "
+                           << queries[i].first << " to Destination node " << queries[i].second
+                           << " via node a (for example, " << queries[i].first << " --> " << queries[i].second
+                           << "); **//" << endl;
+                outputFile << endl;
+
                 if (it->second.first == -1) {
-                    outputFile << "No path exists (disconnected components)" << endl;
+                    outputFile << "No valid path (paths would overlap - violates no-revisit constraint)" << endl;
+                    outputFile << endl;
                 } else {
                     outputFile << "Shortest Path: ";
                     for (int j = 0; j < (int)it->second.second.size(); j++) {
@@ -292,12 +399,20 @@ int main() {
                     }
                     outputFile << endl;
                     outputFile << "Shortest Distance: " << it->second.first << endl;
+                    outputFile << endl;
                 }
-                outputFile << endl;
-                outputFile << "Running-time: " << duration2.count() << " microseconds" << endl;
-                outputFile << endl;
             }
         }
+    }
+
+    cout << "//** print out running time **//" << endl;
+    cout << "Running-time: " << duration2.count() << " microseconds" << endl;
+    cout << endl;
+
+    if (outputFile.is_open()) {
+        outputFile << "//** print out running time **//" << endl;
+        outputFile << "Running-time: " << duration2.count() << " microseconds" << endl;
+        outputFile << endl;
     }
     
     if (outputFile.is_open()) {

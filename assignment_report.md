@@ -57,20 +57,23 @@ This algorithm computes paths on-demand when you ask for them.
 
 #### Algorithm 2: O(n²) - No Revisits
 
-This algorithm precomputes all possible city pairs upfront for faster lookups.
+This algorithm precomputes all possible city pairs upfront, but with the constraint that no city can be visited more than once.
 
 **Steps:**
 
-1. Run Dijkstra's algorithm once from capital 'a'
+1. Run Dijkstra's algorithm once from capital 'a' with parent tracking
 2. For every pair of cities (u, v) where neither is the capital:
-   * Store path u → a → v with distance dist[u] + dist[v]
-   * Save in a map for quick lookup
-3. When queried, just look up the precomputed result
+   * Extract the actual path from a to u using parent pointers
+   * Extract the actual path from a to v using parent pointers
+   * Check if these two paths share any vertices (except 'a')
+   * If they share vertices: Mark as invalid (no valid path without revisits)
+   * If they don't share vertices: Store path u → a → v with distance dist[u] + dist[v]
+3. When queried, look up the precomputed result
 
-**Time Complexity:** O(n²) because we compute all city pairs
+**Time Complexity:** O(n²) because we check all city pairs
 **Space Complexity:** O(n²) to store all pairs
 
-**Trade-off:** Algorithm 1 is faster for few queries, Algorithm 2 is faster for many queries.
+**Key Difference from Algorithm 1:** Algorithm 2 enforces that the path from u→a and the path from a→v must be vertex-disjoint (except at 'a'). If the shortest paths share any vertices, Algorithm 2 rejects the path as invalid.
 
 ### Problem B.3: Bellman-Ford Algorithm (Bonus)
 
@@ -236,7 +239,7 @@ Running-time: 35 microseconds
 
 ### Problem B.2: Shortest Paths Results
 
-**Input:** Graph with 10 nodes, queries: d→i and f→g via capital 'a'
+**Input:** Graph with 11 nodes (a-k), queries: d→i and f→g via capital 'a'
 
 **Algorithm 1 Results:**
 ```
@@ -244,31 +247,33 @@ Running-time: 35 microseconds
 Computing path: d -> a -> i
 Computing path: f -> a -> g
 
-Shortest Path: d, a, i
-Shortest Distance: 70
-Running-time: 42 microseconds
+Shortest Path: d, g, e, a, i
+Shortest Distance: 40
+Running-time: 105 microseconds
 
-Shortest Path: f, a, g
-Shortest Distance: 47
-Running-time: 42 microseconds
+Shortest Path: f, e, a, e, g
+Shortest Distance: 32
+Running-time: 105 microseconds
 ```
 
 **Algorithm 2 Results:**
 ```
 === ALGORITHM 2: O(n^2) - No Revisits ===
 Precomputing all pairs of cities via capital...
-Computed paths for all 72 city pairs
+Computed paths for all 90 city pairs
 
-Shortest Path: d, a, i
-Shortest Distance: 70
-Running-time: 89 microseconds
+Shortest Path: d, g, e, a, i
+Shortest Distance: 40
+Running-time: 533 microseconds
 
-Shortest Path: f, a, g
-Shortest Distance: 47
-Running-time: 89 microseconds
+No valid path (paths would overlap - violates no-revisit constraint)
+Running-time: 533 microseconds
 ```
 
-**Analysis:** Both algorithms produce identical results (as expected), but Algorithm 1 is faster for our 2 queries because it computes on-demand. Algorithm 2 took longer because it precomputed all 72 city pairs, but would be faster if we had many queries.
+**Analysis:**
+- **Query d→i:** Both algorithms find the same path (d→g→e→a→i, distance 40) because the paths don't overlap.
+- **Query f→g:** Algorithm 1 finds a path (f→e→a→e→g, distance 32) but visits city 'e' twice. Algorithm 2 correctly detects that both shortest paths from the capital go through 'e' (a→e→f and a→e→g), so it reports no valid path exists without revisiting a city.
+- Algorithm 2 took longer (533μs vs 105μs) because it precomputed all 90 city pairs and checked each for overlaps. For many queries, Algorithm 2 would be faster since paths are precomputed.
 
 ### Problem B.3: Bellman-Ford Results
 
@@ -277,31 +282,31 @@ Running-time: 89 microseconds
 **Results:**
 ```
 === BELLMAN-FORD ALGORITHM ===
-Graph has 10 nodes and 24 directed edges
+Graph has 11 nodes and 42 directed edges
 Running Bellman-Ford from capital 'a'...
-Will relax edges 9 times
+Will relax edges 10 times
 
-Shortest Path: d, a, i
-Shortest Distance: 70
-Running-time: 62 microseconds
+Shortest Path: d, g, e, a, i
+Shortest Distance: 40
+Running-time: 123 microseconds
 
-Shortest Path: f, a, g
-Shortest Distance: 47
-Running-time: 62 microseconds
+Shortest Path: f, e, a, e, g
+Shortest Distance: 32
+Running-time: 123 microseconds
 ```
 
-**Analysis:** Bellman-Ford produces the same correct results as Dijkstra, confirming our implementation is correct. It's slower (62μs vs 42μs) because it relaxes edges 9 times instead of using a priority queue, but it's more general because it can handle negative weights.
+**Analysis:** Bellman-Ford produces the same correct results as Dijkstra (Algorithm 1), confirming our implementation is correct. Like Algorithm 1, it allows revisiting cities, so for query f→g it finds the path that visits 'e' twice. It's slower (123μs vs 105μs) because it relaxes edges 10 times instead of using a priority queue, but it's more general because it can handle negative weights.
 
 ### Performance Comparison
 
 | Problem | Algorithm | Time Complexity | Running Time |
 |---------|-----------|----------------|--------------|
-| B.1 | Union-Find | O(E log E) | ~35 μs |
-| B.2 | Dijkstra (Alg 1) | O(n log n) | ~42 μs |
-| B.2 | Precompute (Alg 2) | O(n²) | ~89 μs |
-| B.3 | Bellman-Ford | O(VE) | ~62 μs |
+| B.1 | Union-Find | O(E log E) | ~75 μs |
+| B.2 | Dijkstra (Alg 1) | O(n log n) | ~105 μs |
+| B.2 | Precompute (Alg 2) | O(n²) | ~533 μs |
+| B.3 | Bellman-Ford | O(VE) | ~120 μs |
 
-The results match our complexity expectations - Union-Find is fastest for the small problem, Dijkstra is efficient for sparse graphs, and Bellman-Ford is slowest but most versatile.
+The results match our complexity expectations. Algorithm 2 is slower for just 2 queries because it precomputes all 90 pairs and validates each for the no-revisit constraint. With many queries, Algorithm 2 would be faster since lookups are O(1).
 
 ## (4) Report of Any Bugs
 
@@ -321,7 +326,9 @@ No known issues.
 
 ### Challenges Encountered
 
-The hardest part was understanding the difference between B.2's two algorithms at first. I initially thought "no revisits" meant something about the path itself, but it actually refers to not recomputing - Algorithm 2 precomputes everything once. Once I understood that, the implementation made a lot more sense.
+The hardest part was understanding the "no revisits" constraint for B.2's Algorithm 2. At first I just computed dist[start] + dist[end] for all pairs, but then realized this doesn't check if the actual paths share vertices. For example, if both paths go through the same city 'e', that city gets visited twice in the combined path, which violates the constraint.
+
+I had to modify Dijkstra to track parent pointers, then extract the actual paths and check if they share any vertices (except the capital). If they do, Algorithm 2 marks that pair as invalid. This was more complex than I expected but makes sense - some city pairs just don't have a valid path through the capital without revisiting cities.
 
 Another challenge was making the Union-Find work efficiently. I had to implement both path compression and union by rank to keep it fast. Without these optimizations, the find operations would be slow for 20 photos.
 
