@@ -1,3 +1,5 @@
+//** ALGORITHM 1: O(n log n) - Visits Allowed **//
+
 //** Print out the shortest distance D and the shortest path from Source node d to Destination node i via node a (for example, d --> i); **//
 
 Shortest Path: d, g, e, a, i
@@ -9,7 +11,10 @@ Shortest Path: f, e, a, e, g
 Shortest Distance: 32
 
 //** print out running time **//
-Running-time: 53 microseconds
+Running-time: 45 microseconds
+
+
+//** ALGORITHM 2: O(n^2) - No Revisits **//
 
 //** Print out the shortest distance D and the shortest path from Source node d to Destination node i via node a (for example, d --> i); **//
 
@@ -21,5 +26,5 @@ Shortest Distance: 40
 No valid path (paths would overlap - violates no-revisit constraint)
 
 //** print out running time **//
-Running-time: 240 microseconds
+Running-time: 232 microseconds
 

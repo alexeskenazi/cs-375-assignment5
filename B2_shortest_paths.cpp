@@ -299,6 +299,10 @@ int main() {
     auto duration1 = duration_cast<microseconds>(end1 - start1);
     cout << endl;
 
+    if (outputFile.is_open()) {
+        outputFile << "//** ALGORITHM 1: O(n log n) - Visits Allowed **//" << endl << endl;
+    }
+
     for (int i = 0; i < (int)results.size(); i++) {
         cout << "//** Print out the shortest distance D and the shortest path from Source node "
              << queries[i].first << " to Destination node " << queries[i].second
@@ -360,6 +364,10 @@ int main() {
     auto end2 = high_resolution_clock::now();
     auto duration2 = duration_cast<microseconds>(end2 - start2);
     cout << "Computed paths for all " << allPairs.size() << " city pairs" << endl << endl;
+
+    if (outputFile.is_open()) {
+        outputFile << endl << "//** ALGORITHM 2: O(n^2) - No Revisits **//" << endl << endl;
+    }
 
     for (int i = 0; i < (int)queries.size(); i++) {
         PathMap::iterator it = allPairs.find(queries[i]);
